@@ -48,8 +48,8 @@ typedef struct {
 //TO DO:
 //TASK 2
 //Give DELAY1 and DELAY2 sensible values
-#define DELAY1 500
-#define DELAY2 265
+#define DELAY1 1000
+#define DELAY2 1000
 
 //TO DO:
 //TASK 4
@@ -150,7 +150,7 @@ int main(void){
 	//TASK 1
 	//First run this with nothing else in the loop and scope pin PC8 on an oscilloscope
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-	pause_sec(60);
+	pause_sec(1);
 	//TO DO:
 	//TASK 6
 
