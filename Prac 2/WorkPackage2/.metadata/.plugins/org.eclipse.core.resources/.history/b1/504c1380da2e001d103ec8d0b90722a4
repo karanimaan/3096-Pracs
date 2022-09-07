@@ -48,8 +48,8 @@ typedef struct {
 //TO DO:
 //TASK 2
 //Give DELAY1 and DELAY2 sensible values
-#define DELAY1 0
-#define DELAY2 0
+#define DELAY1 1000
+#define DELAY2 1000
 
 //TO DO:
 //TASK 4
@@ -150,7 +150,7 @@ int main(void){
 	//TASK 1
 	//First run this with nothing else in the loop and scope pin PC8 on an oscilloscope
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-
+	pause_sec(1);
 	//TO DO:
 	//TASK 6
 
@@ -356,7 +356,7 @@ void pause_sec(float x)
 	//TO DO:
 	//TASK 2
 	//Make sure you've defined DELAY1 and DELAY2 in the private define section
-
+	for (int i = 0; i <= DELAY1*x; i++);
 	//YOUR CODE HERE
 }
 
@@ -380,9 +380,10 @@ int bcdToDec(uint8_t val)
 
 }
 
+/*
 void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, uint8_t month, uint8_t year)
 {
-    /* Write the time to the RTC using I2C */
+     Write the time to the RTC using I2C
 	//TO DO:
 	//TASK 4
 
@@ -396,10 +397,11 @@ void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, 
 	HAL_I2C_Mem_Write(&hi2c1, DS3231_ADDRESS, FIRST_REG, REG_SIZE, set_time, 7, 1000);
 
 }
+*/
 
-void getTime (void)
+/*void getTime (void)
 {
-    /* Get the time from the RTC using I2C */
+     Get the time from the RTC using I2C
 	//TO DO:
 	//TASK 4
 	//Update the global TIME time structure
@@ -409,15 +411,17 @@ void getTime (void)
 	//fill in the address of the RTC, the address of the first register to write anmd the size of each register
 	//The function and RTC supports multiread. That means we can give the function a buffer and first address
 	//and it will read 1 byte of data, increment the register address, write another byte and so on
-	HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, FIRST_REG, REG_SIZE, get_time, 7, 1000);
+
+	//HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, FIRST_REG, REG_SIZE, get_time, 7, 1000);
 
 
 	//YOUR CODE HERE
 
-}
+}*/
 
-int epochFromTime(TIME time){
-    /* Convert time to UNIX epoch time */
+
+/*int epochFromTime(TIME time){
+     Convert time to UNIX epoch time
 	//TO DO:
 	//TASK 5
 	//You have been given the epoch time for Saturday, January 1, 2022 12:00:00 AM GMT+02:00
@@ -430,16 +434,16 @@ int epochFromTime(TIME time){
 		day += 31;
 	break;
 
-	/*
+
 	 *COMPLETE THE SWITCH CASE OR INSERT YOUR OWN LOGIC
-	 */
+
 
 	default:
 		day = day;
 	}
 
 	return EPOCH_2022 + ;
-}
+}*/
 
 /* USER CODE END 4 */
 
