@@ -1,2 +1,3 @@
 rpi/
-.metadata/
+*/*/.metadata/
+Prac 2/WorkPackage2/.metadata/
