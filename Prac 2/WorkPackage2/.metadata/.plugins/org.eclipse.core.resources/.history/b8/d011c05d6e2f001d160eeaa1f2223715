@@ -150,16 +150,15 @@ int main(void){
 	//TASK 1
 	//First run this with nothing else in the loop and scope pin PC8 on an oscilloscope
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-	pause_sec(2);
+	pause_sec(60);
 	//TO DO:
 	//TASK 6
 
-	sprintf(buffer, "%d \r\n", 55555555555555);
-	//This creates a string "55555555555555" with a pointer called buffer
+	sprintf(buffer, "%d \r\n", 55555555555555); //This creates a string with a pointer called buffer
 
 	//Transmit data via UART
 	//Blocking! fine for small buffers
-	HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+	HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), 1000);
 
 
 

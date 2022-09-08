@@ -150,7 +150,7 @@ int main(void){
 	//TASK 1
 	//First run this with nothing else in the loop and scope pin PC8 on an oscilloscope
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-	pause_sec(2);
+	pause_sec(60);
 	//TO DO:
 	//TASK 6
 
