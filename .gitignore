@@ -5,3 +5,4 @@ rpi/
 *.list 
 *.map 
 *.launch
+*.su

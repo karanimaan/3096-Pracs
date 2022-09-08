@@ -150,16 +150,16 @@ int main(void){
 	//TASK 1
 	//First run this with nothing else in the loop and scope pin PC8 on an oscilloscope
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-	pause_sec(60);
+	pause_sec(2);
 	//TO DO:
 	//TASK 6
 
-	//sprintf(buffer, "%d \r\n", 55555555555555);
+	sprintf(buffer, "%d \r\n", 55555555555555);
 	//This creates a string "55555555555555" with a pointer called buffer
 
 	//Transmit data via UART
 	//Blocking! fine for small buffers
-	//HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+	HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
 
 
 
@@ -367,6 +367,10 @@ uint8_t decToBcd(int val)
 	//TASK 3
 
 	//YOUR CODE HERE
+	uint8_t unit = val%10;
+	uint8_t ten =  (val/10);
+
+	return ((ten<<4)+unit);
 }
 
 int bcdToDec(uint8_t val)
@@ -376,7 +380,9 @@ int bcdToDec(uint8_t val)
 	//TASK 3
 	//Complete the BCD to decimal function
 
-	//YOUR CODE HERE
+	int digit1 = (val&11110000>>4);
+	int digit2 = (val&00001111);
+	return ((digit1*10)+digit2);
 
 }
 
