@@ -1,2 +1,7 @@
 rpi/
 **/.metadata/
+*.o 
+*.elf 
+*.list 
+*.map 
+*.launch

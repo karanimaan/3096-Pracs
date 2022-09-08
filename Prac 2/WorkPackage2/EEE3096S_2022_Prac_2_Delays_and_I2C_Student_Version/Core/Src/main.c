@@ -356,7 +356,7 @@ void pause_sec(float x)
 	//TO DO:
 	//TASK 2
 	//Make sure you've defined DELAY1 and DELAY2 in the private define section
-	for (int i = 0; i <= DELAY1*DELAY2*x; i++);
+	for (int i = 0; i <= 1000000*x; i++);
 	//YOUR CODE HERE
 }
 
