@@ -48,7 +48,7 @@ typedef struct {
 //TO DO:
 //TASK 2
 //Give DELAY1 and DELAY2 sensible values
-#define DELAY1 500
+#define DELAY1 1
 #define DELAY2 265
 
 //TO DO:
@@ -84,7 +84,7 @@ static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void HAL_UART_TxCpltCllback(UART_HandleTypeDef *huart);
-void pause_sec(float x);
+void pause_sec(int x);
 
 uint8_t decToBcd(int val);
 int bcdToDec(uint8_t val);
@@ -150,7 +150,7 @@ int main(void){
 	//TASK 1
 	//First run this with nothing else in the loop and scope pin PC8 on an oscilloscope
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-	pause_sec(2);
+	pause_sec(1);
 	//TO DO:
 	//TASK 6
 
@@ -350,13 +350,13 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void pause_sec(float x)
+void pause_sec(int x)
 {
 	/* Delay program execution for x seconds */
 	//TO DO:
 	//TASK 2
 	//Make sure you've defined DELAY1 and DELAY2 in the private define section
-	for (int i = 0; i <= 1000000*x; i++);
+	for (int i = 0; i <= DELAY1*DELAY2*x; i++);
 	//YOUR CODE HERE
 }
 
