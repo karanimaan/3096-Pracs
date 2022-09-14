@@ -438,8 +438,8 @@ void getTime (void)
 }
 
 
-/*int epochFromTime(TIME time){
-     Convert time to UNIX epoch time
+int epochFromTime(TIME time){
+    //Convert time to UNIX epoch time
 	//TO DO:
 	//TASK 5
 	//You have been given the epoch time for Saturday, January 1, 2022 12:00:00 AM GMT+02:00
@@ -447,21 +447,60 @@ void getTime (void)
 
 	//YOUR CODE HERE
 
-	switch(months){
-	case 1:
-		day += 31;
-	break;
+	        //Convert time to UNIX epoch time
+	//TO DO:
+	//TASK 5
+	//You have been given the epoch time for Saturday, January 1, 2022 12:00:00 AM GMT+02:00
+	//It is define above as EPOCH_2022. You can work from that and ignore the effects of leap years/seconds
+
+	//YOUR CODE HERE
+
+	uint8_t day = time.dayofmonth;
+	switch(time.month){
+			  case 2:
+		  		    day += 31;//February
+	                break;
+	          case 3:
+	        	  	day += 59;//March, ignoring leap day
+	                break;
+	          case 4:
+	        	    day += 90;//April
+	                break;
+	          case 5:
+	        	    day += 120;//May
+	                break;
+	          case 6:
+	        	    day += 151;//June
+	                break;
+	          case 7:
+	        	    day += 181;//July
+	                break;
+	          case 8:
+	        	    day += 211;//August
+	                break;
+	          case 9:
+	        	    day += 242;//September
+	                break;
+	          case 10:
+	        	    day += 272;//October
+	                break;
+	          case 11:
+	        	    day += 303;//November
+	                break;
+	          case 12:
+	        	    day += 333;//in December
+	                break;
+	          default:
+	        	    day = day;//in January
+		}
+
+		return EPOCH_2022 + ((time.year - 22)*86400*365 + (day*86400) + (time.hour*3600) +
+				(time.minutes*60) + time.seconds);
+}
 
 
-	 *COMPLETE THE SWITCH CASE OR INSERT YOUR OWN LOGIC
 
 
-	default:
-		day = day;
-	}
-
-	return EPOCH_2022 + ;
-}*/
 
 /* USER CODE END 4 */
 
