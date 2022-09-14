@@ -48,7 +48,7 @@ typedef struct {
 //TO DO:
 //TASK 2
 //Give DELAY1 and DELAY2 sensible values
-#define DELAY1 1
+#define DELAY1 10000
 #define DELAY2 265
 
 //TO DO:
