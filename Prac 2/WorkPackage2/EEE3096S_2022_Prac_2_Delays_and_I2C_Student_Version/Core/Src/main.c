@@ -29,7 +29,7 @@ RTC Connections: (+)->5V (-)->GND D->PB7 (I2C1_SDA) C->PB6 (I2C1_SCL)
 #include "stdio.h"
 /* USER CODE END Includes */
 
-/* TIME -----------------------------------------------------------*/
+/* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 typedef struct {
 	uint8_t seconds;
@@ -48,13 +48,13 @@ typedef struct {
 //TO DO:
 //TASK 2
 //Give DELAY1 and DELAY2 sensible values
-#define DELAY1 10000
+#define DELAY1 500
 #define DELAY2 265
 
 //TO DO:
 //TASK 4
 //Define the RTC slave address
-#define DS3231_ADDRESS 0x0
+#define DS3231_ADDRESS 0xD0
 
 #define EPOCH_2022 1640988000
 /* USER CODE END PD */
@@ -65,7 +65,7 @@ typedef struct {
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-I2C_HandleTypeDef hi2c1;
+ I2C_HandleTypeDef hi2c1;
 
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_tx;
@@ -84,7 +84,7 @@ static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void HAL_UART_TxCpltCllback(UART_HandleTypeDef *huart);
-void pause_sec(int x);
+void pause_sec(float x);
 
 uint8_t decToBcd(int val);
 int bcdToDec(uint8_t val);
@@ -103,8 +103,8 @@ int epochFromTime(TIME time);
   * @brief  The application entry point.
   * @retval int
   */
-int main(void){
-
+int main(void)
+{
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -130,13 +130,13 @@ int main(void){
   MX_I2C1_Init();
   MX_DMA_Init();
   MX_USART2_UART_Init();
-
   /* USER CODE BEGIN 2 */
-
 
   //TO DO
   //TASK 6
   //YOUR CODE HERE
+  int epochTime=0;
+  setTime(0,31,17,01, 19, 9, 22);
 
 
   /* USER CODE END 2 */
@@ -146,26 +146,17 @@ int main(void){
   while (1)
   {
     /* USER CODE END WHILE */
-	//TO DO:
-	//TASK 1
-	//First run this with nothing else in the loop and scope pin PC8 on an oscilloscope
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-	pause_sec(1);
-	//TO DO:
-	//TASK 6
+//	  sprintf(buffer, "%d \r\n", 55555555555555);
+	  //This creates a string "55555555555555" with a pointer called buffer
 
-	sprintf(buffer, "%d \r\n", 6);
-	//This creates a string "55555555555555" with a pointer called buffer
-
-	//Transmit data via UART
-	//Blocking! fine for small buffers
-	HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
-
-
-
-	//YOUR CODE HERE
-
-
+	  //Transmit data via UART
+	  //Blocking! fine for small buffers
+	  getTime();
+	  sprintf(buffer, "%d-%d-%d %d:%d:%d \r\n", time.year, time.month, time.dayofmonth, time.hour, time.minutes, time.seconds);
+	  HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+	  epochTime=epochFromTime(time);
+	  sprintf(buffer, "%d \r\n", epochTime);
+	  HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
 
     /* USER CODE BEGIN 3 */
   }
@@ -350,7 +341,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void pause_sec(int x)
+void pause_sec(float x)
 {
 	/* Delay program execution for x seconds */
 	//TO DO:
@@ -380,8 +371,8 @@ int bcdToDec(uint8_t val)
 	//TASK 3
 	//Complete the BCD to decimal function
 
-	int digit1 = (val & 0b11110000>>4);
-	int digit2 = (val & 0b00001111);
+	int digit1 = (val&11110000>>4);
+	int digit2 = (val&00001111);
 	return ((digit1*10)+digit2);
 
 }
@@ -393,10 +384,9 @@ void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, 
 	//TO DO:
 	//TASK 4
 
-	uint8_t set_time[7];
+    uint8_t set_time[7];
 
 	//YOUR CODE HERE
-
 	set_time[0]= sec;
 	set_time[1]= min;
 	set_time[2]= hour;
@@ -439,22 +429,13 @@ void getTime (void)
 
 
 int epochFromTime(TIME time){
-    //Convert time to UNIX epoch time
+     //Convert time to UNIX epoch time
 	//TO DO:
 	//TASK 5
 	//You have been given the epoch time for Saturday, January 1, 2022 12:00:00 AM GMT+02:00
 	//It is define above as EPOCH_2022. You can work from that and ignore the effects of leap years/seconds
 
 	//YOUR CODE HERE
-
-	        //Convert time to UNIX epoch time
-	//TO DO:
-	//TASK 5
-	//You have been given the epoch time for Saturday, January 1, 2022 12:00:00 AM GMT+02:00
-	//It is define above as EPOCH_2022. You can work from that and ignore the effects of leap years/seconds
-
-	//YOUR CODE HERE
-
 	uint8_t day = time.dayofmonth;
 	switch(time.month){
 			  case 2:
@@ -497,10 +478,6 @@ int epochFromTime(TIME time){
 		return EPOCH_2022 + ((time.year - 22)*86400*365 + (day*86400) + (time.hour*3600) +
 				(time.minutes*60) + time.seconds);
 }
-
-
-
-
 
 /* USER CODE END 4 */
 
