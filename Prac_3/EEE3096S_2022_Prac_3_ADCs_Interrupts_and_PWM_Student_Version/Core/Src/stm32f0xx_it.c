@@ -148,7 +148,11 @@ void SysTick_Handler(void)
   */
 void EXTI0_1_IRQHandler(void)
 {
+  //Interrupt request (IRQ) = mode of the ARM operation that we...
+  //change to for handling low priority interrupts
   /* USER CODE BEGIN EXTI0_1_IRQn 0 */
+
+
 
   /* USER CODE END EXTI0_1_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(B1_Pin);

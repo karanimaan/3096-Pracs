@@ -400,7 +400,11 @@ void EXTI0_1_IRQHandler(void)
 	//TO DO:
 	//TASK 1
 	//Switch delay frequency
-
+    //Default frequency = 1 Hz => 1000 ms
+    //New frequency = 2 Hz => 500 ms
+    HAL_GPIO_TogglePin(B1_Pin, LD4_Pin);
+    HAL_Delay(500);
+    //Add getTick() to account for button debouncing
 	HAL_GPIO_EXTI_IRQHandler(B1_Pin); // Clear interrupt flags
 }
 
