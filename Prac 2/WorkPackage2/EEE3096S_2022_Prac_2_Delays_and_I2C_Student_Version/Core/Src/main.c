@@ -384,13 +384,13 @@ void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, 
     uint8_t set_time[7];
 
 	//YOUR CODE HERE
-	set_time[0]= dectoBcd(sec);
-	set_time[1]= dectoBcd(min);
-	set_time[2]= dectoBcd(hour);
-	set_time[3]= dectoBcd(dow);
-	set_time[4]= dectoBcd(dom);
-	set_time[5]= dectoBcd(month);
-	set_time[6]= dectoBcd(year);
+	set_time[0]= decToBcd(sec);
+	set_time[1]= decToBcd(min);
+	set_time[2]= decToBcd(hour);
+	set_time[3]= decToBcd(dow);
+	set_time[4]= decToBcd(dom);
+	set_time[5]= decToBcd(month);
+	set_time[6]= decToBcd(year);
 
 
 	//fill in the address of the RTC, the address of the first register to write anmd the size of each register
@@ -418,7 +418,7 @@ void getTime (void)
 
 
 	//YOUR CODE HERE
-	time= (TIME){.seconds=bcdtoDec(get_time[0]), .minutes=bcdtoDec(get_time[1]), .hour=bcdtoDec(get_time[2]), .dayofweek=bcdtoDec(get_time[3]), .dayofmonth=bcdtoDec(get_time[4]), .month=bcdtoDec(get_time[5]), .year=bcdtoDec(get_time[6])};
+	time= (TIME){.seconds=bcdToDec(get_time[0]), .minutes=bcdToDec(get_time[1]), .hour=bcdToDec(get_time[2]), .dayofweek=bcdToDec(get_time[3]), .dayofmonth=bcdToDec(get_time[4]), .month=bcdToDec(get_time[5]), .year=bcdToDec(get_time[6])};
 
 
 
