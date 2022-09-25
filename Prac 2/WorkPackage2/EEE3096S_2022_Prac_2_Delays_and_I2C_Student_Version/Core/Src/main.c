@@ -368,8 +368,8 @@ int bcdToDec(uint8_t val)
 	//TASK 3
 	//Complete the BCD to decimal function
 
-	int digit1 = (val&11110000>>4);
-	int digit2 = (val&00001111);
+    int digit1 = (val & 0b11110000)>>4;
+	int digit2 = (val & 0b00001111);
 	return ((digit1*10)+digit2);
 
 }
