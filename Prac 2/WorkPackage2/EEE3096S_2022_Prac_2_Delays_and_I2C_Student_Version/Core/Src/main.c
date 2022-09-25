@@ -71,7 +71,7 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
-char buffer[15];
+char buffer[20];
 uint8_t data [] = "Hello from STM32!\r\n";
 TIME time;
 /* USER CODE END PV */
@@ -150,10 +150,16 @@ int main(void)
 
 	  //Transmit data via UART
 	  //Blocking! fine for small buffers
+	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
 	  getTime();
 	  int epochTime=epochFromTime(time);
-	  sprintf(buffer, "%d-%d-%d %d:%d:%d ->epochT:%d \r\n", time.year, time.month, time.dayofmonth, time.hour, time.minutes, time.seconds, epochTime);
+
+	  sprintf(buffer, "\r\n %02d-%02d-%02d %02d:%02d:%02d ", time.year, time.month, time.dayofmonth, time.hour, time.minutes, time.seconds);
 	  HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+
+	  sprintf(buffer, " epochTime:%d ", epochTime);
+	  HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+
 	  pause_sec(1);
     /* USER CODE BEGIN 3 */
   }
