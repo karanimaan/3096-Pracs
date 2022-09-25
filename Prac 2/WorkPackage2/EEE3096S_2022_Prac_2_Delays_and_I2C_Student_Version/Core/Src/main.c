@@ -71,7 +71,7 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
-char buffer[14];
+char buffer[15];
 uint8_t data [] = "Hello from STM32!\r\n";
 TIME time;
 /* USER CODE END PV */
@@ -135,7 +135,6 @@ int main(void)
   //TO DO
   //TASK 6
   //YOUR CODE HERE
-  int epochTime=0;
   setTime(0,31,17,01, 19, 9, 22);
 
 
@@ -152,12 +151,10 @@ int main(void)
 	  //Transmit data via UART
 	  //Blocking! fine for small buffers
 	  getTime();
-	  sprintf(buffer, "%d-%d-%d %d:%d:%d \r\n", time.year, time.month, time.dayofmonth, time.hour, time.minutes, time.seconds);
+	  int epochTime=epochFromTime(time);
+	  sprintf(buffer, "%d-%d-%d %d:%d:%d ->epochT:%d \r\n", time.year, time.month, time.dayofmonth, time.hour, time.minutes, time.seconds, epochTime);
 	  HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
-	  epochTime=epochFromTime(time);
-	  sprintf(buffer, "%d \r\n", epochTime);
-	  HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
-
+	  pause_sec(1);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -387,19 +384,19 @@ void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, 
     uint8_t set_time[7];
 
 	//YOUR CODE HERE
-	set_time[0]= sec;
-	set_time[1]= min;
-	set_time[2]= hour;
-	set_time[3]= dow;
-	set_time[4]= dom;
-	set_time[5]= month;
-	set_time[6]= year;
+	set_time[0]= dectoBcd(sec);
+	set_time[1]= dectoBcd(min);
+	set_time[2]= dectoBcd(hour);
+	set_time[3]= dectoBcd(dow);
+	set_time[4]= dectoBcd(dom);
+	set_time[5]= dectoBcd(month);
+	set_time[6]= dectoBcd(year);
 
 
 	//fill in the address of the RTC, the address of the first register to write anmd the size of each register
 	//The function and RTC supports multiwrite. That means we can give the function a buffer and first address
 	//and it will write 1 byte of data, increment the register address, write another byte and so on
-	HAL_I2C_Mem_Write(&hi2c1, DS3231_ADDRESS, 0x0, 8, set_time, 7, 1000);
+	HAL_I2C_Mem_Write(&hi2c1, DS3231_ADDRESS, 0x0, 1, set_time, 7, 1000);
 
 }
 
@@ -417,11 +414,11 @@ void getTime (void)
 	//The function and RTC supports multiread. That means we can give the function a buffer and first address
 	//and it will read 1 byte of data, increment the register address, write another byte and so on
 
-	HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, 0x0, 8, get_time, 7, 1000);
+	HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, 0x0, 1, get_time, 7, 1000);
 
 
 	//YOUR CODE HERE
-	time= (TIME){.seconds=get_time[0], .minutes=get_time[1], .hour=get_time[2], .dayofweek=get_time[3], .dayofmonth=get_time[4], .month=get_time[5], .year=get_time[6]};
+	time= (TIME){.seconds=bcdtoDec(get_time[0]), .minutes=bcdtoDec(get_time[1]), .hour=bcdtoDec(get_time[2]), .dayofweek=bcdtoDec(get_time[3]), .dayofmonth=bcdtoDec(get_time[4]), .month=bcdtoDec(get_time[5]), .year=bcdtoDec(get_time[6])};
 
 
 
