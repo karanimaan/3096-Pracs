@@ -118,6 +118,10 @@ int main(void)
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4); //Start the PWM on TIM3 Channel 4 (Green LED)
   /* USER CODE END 2 */
 
+  char buffer[10];
+
+#define UART_TIMEOUT 1000
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -126,9 +130,14 @@ int main(void)
 	  //TO DO:
 	  //TASK 2
 	  //Test your pollADC function and display via UART
+	  uint32_t adc_val = pollADC();
+      sprintf(buffer, "adc_val = %d \r\n", adc_val);
+      HAL_UART_Transmit(&huart2, buffer, size(buffer), UART_TIMEOUT);
 
 	  //TASK 3
 	  //Test your ADCtoCRR function. Display CRR value via UART
+      sprintf(buffer, "dc_val = %d \r\n", ADCtoCRR(adc_val));
+      HAL_UART_Transmit(&huart2, buffer, size(buffer), UART_TIMEOUT);
 
 	  //TASK 4
 	  //Complete rest of implementation
@@ -395,8 +404,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void EXTI0_1_IRQHandler(void)
-{
+void EXTI0_1_IRQHandler(void){   // interrupt which changes LED blinking frequency
 	//TO DO:
 	//TASK 1
 	//Switch delay frequency
@@ -412,27 +420,26 @@ void EXTI0_1_IRQHandler(void)
     
 }
 
-uint32_t pollADC(void){
+uint32_t pollADC(void){     // get ADC value
 	//TO DO:
 	//TASK 2
 	// Complete the function body
-    uint32_t timeout = 100;//in milliseconds
-    //timeout = 500ms?
-       
+    uint32_t timeout = 100;//in milliseconds //timeout = 500ms?
     HAL_ADC_Start(&hadc);
     HAL_ADC_PollForConversion(&hadc, 100);
+
     uint32_t val = HAL_ADC_GetValue(&hadc);
     HAL_ADC_Stop(&hadc);
     
     sprintf(buffer, "adc = %d", val);
     HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
-    //ADC has 12-bit resolultion
+    //ADC has 12-bit resolution
 	return val;
 }
 
-uint32_t ADCtoCRR(uint32_t adc_val){
+uint32_t ADCtoCRR(uint32_t adc_val){    // convert ADC value to PWM duty cycle (CRR) value
 	//TO DO:
-	//TASK 2
+	//TASK 3
 	// Complete the function body
 	//HINT: The CCR value for 100% DC is 47999 (DC = CCR/ARR = CRR/47999)
 	//HINT: The ADC range is approx 0 - 4095 => adc_val in range(0, 4095)
