@@ -404,10 +404,11 @@ void EXTI0_1_IRQHandler(void)
     uint32_t tick = 100;
         
     if (HAL_GetTick() > tick) {//for debounce
-        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);//toggle blue LED
+        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);// toggle blue LED
         HAL_Delay(500);//500ms => 2 Hz
+        HAL_GPIO_EXTI_IRQHandler(B1_Pin); // clear interrupt flags
     }
-	HAL_GPIO_EXTI_IRQHandler(B1_Pin); // Clear interrupt flags
+    
 }
 
 uint32_t pollADC(void){
