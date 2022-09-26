@@ -417,6 +417,7 @@ uint32_t pollADC(void){
        
     HAL_ADC_Start(&hadc);
     HAL_ADC_PollForConversion(&hadc, timeout);
+    uint32_t val = HAL_ADC_GetValue(&hadc);
     HAL_ADC_Stop(&hadc);
     //ADC has 12-bit resolultion
 	return val;
