@@ -401,8 +401,10 @@ void EXTI0_1_IRQHandler(void)
 	//TASK 1
 	//Switch delay frequency
     //HAL_Delay(1000);//1000ms => 1 Hz
+    uint32_t tickStart = HAL_GetTick();
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);//toggle blue LED
     HAL_Delay(500);//500ms => 2 Hz
+    //remember to account for button debouncing
 	HAL_GPIO_EXTI_IRQHandler(B1_Pin); // Clear interrupt flags
 }
 
@@ -410,6 +412,13 @@ uint32_t pollADC(void){
 	//TO DO:
 	//TASK 2
 	// Complete the function body
+    uint32_t timeout = HAL_GetTick();//in milliseconds
+    //timeout = 500ms?
+       
+    HAL_ADC_Start(&hadc);
+    HAL_ADC_PollForConversion(&hadc, timeout);
+    HAL_ADC_Stop(&hadc);
+    //ADC has 12-bit resolultion
 	return val;
 }
 
