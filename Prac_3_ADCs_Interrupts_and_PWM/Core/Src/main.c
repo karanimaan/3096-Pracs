@@ -110,17 +110,15 @@ int main(void)
   MX_USART2_UART_Init();
   MX_ADC_Init();
   MX_TIM3_Init();
+
   /* USER CODE BEGIN 2 */
 
-  //TO DO:
-  //Create variables needed in while loop
+  // For UART Transmit
+  char buffer[10];
+#define UART_TIMEOUT 1000
 
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4); //Start the PWM on TIM3 Channel 4 (Green LED)
   /* USER CODE END 2 */
-
-  char buffer[10];
-
-#define UART_TIMEOUT 1000
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
