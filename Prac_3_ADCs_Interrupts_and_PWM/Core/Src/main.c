@@ -434,16 +434,18 @@ uint32_t ADCtoCRR(uint32_t adc_val){
 	//TO DO:
 	//TASK 2
 	// Complete the function body
-	//HINT: The CCR value for 100% DC is 47999 (DC = CRR/ARR = CRR/47999)
+	//HINT: The CCR value for 100% DC is 47999 (DC = CCR/ARR = CRR/47999)
 	//HINT: The ADC range is approx 0 - 4095 => adc_val in range(0, 4095)
 	//HINT: Scale number from 0-4096 to 0 - 
     
     //if the value is 200, then green LED will be on for 200 cycles and of for 3896 cycles
     uint32_t ccr_val = 200;//change to suitable value
-    HAL_TIM_PWM_Start(&hadc, TIM_CHANNEL_4);
+    uint32_t arr_val = 47999;
+//     HAL_TIM_PWM_Start(&hadc, TIM_CHANNEL_4);
     __HAL_TIM_SetCompare(htim3, TIM_CHANNEL_4, ccr_val);
     HAL_ADC_Start_IT(&hadc);
     HAL_ADC_Stop_IT(&hadc);
+    uint32_t val = ccr_val/arr_val;
 	return val;
 }
 
