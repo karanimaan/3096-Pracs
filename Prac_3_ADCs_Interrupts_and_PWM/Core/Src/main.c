@@ -402,8 +402,9 @@ void EXTI0_1_IRQHandler(void)
 	//Switch delay frequency
     //HAL_Delay(1000);//1000ms => 1 Hz
     uint32_t tick = 100;
+    uint32_t tickStart = HAL_GetTick();
         
-    if (HAL_GetTick() > tick) {//for debounce
+    if ((HAL_GetTick()-tickStart) <= tick) {
         HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);// toggle blue LED
         HAL_Delay(500);//500ms => 2 Hz
         HAL_GPIO_EXTI_IRQHandler(B1_Pin); // clear interrupt flags
@@ -422,6 +423,9 @@ uint32_t pollADC(void){
     HAL_ADC_PollForConversion(&hadc, 100);
     uint32_t val = HAL_ADC_GetValue(&hadc);
     HAL_ADC_Stop(&hadc);
+    
+    sprintf(buffer, "adc = %d", val);
+    HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
     //ADC has 12-bit resolultion
 	return val;
 }
@@ -431,9 +435,15 @@ uint32_t ADCtoCRR(uint32_t adc_val){
 	//TASK 2
 	// Complete the function body
 	//HINT: The CCR value for 100% DC is 47999 (DC = CRR/ARR = CRR/47999)
-	//HINT: The ADC range is approx 0 - 4095
-	//HINT: Scale number from 0-4096 to 0 - 47999
-    __HAL_TIM_SetCompare(htim3, TIM_CHANNEL_4, adc_val);
+	//HINT: The ADC range is approx 0 - 4095 => adc_val in range(0, 4095)
+	//HINT: Scale number from 0-4096 to 0 - 
+    
+    //if the value is 200, then green LED will be on for 200 cycles and of for 3896 cycles
+    unint32t ccr_val = 200;//change to suitable value
+    HAL_TIM_PWM_Start(&hadc, TIM_CHANNEL_4);
+    __HAL_TIM_SetCompare(htim3, TIM_CHANNEL_4, ccr_val);
+    HAL_ADC_Start_IT(&hadc);
+    HAL_ADC_Stop_IT(&hadc);
 	return val;
 }
 
