@@ -401,10 +401,12 @@ void EXTI0_1_IRQHandler(void)
 	//TASK 1
 	//Switch delay frequency
     //HAL_Delay(1000);//1000ms => 1 Hz
-    uint32_t tickStart = HAL_GetTick();
-    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);//toggle blue LED
-    HAL_Delay(500);//500ms => 2 Hz
-    //remember to account for button debouncing
+    uint32_t tick = 100;
+        
+    if (HAL_GetTick() > tick) {//for debounce
+        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);//toggle blue LED
+        HAL_Delay(500);//500ms => 2 Hz
+    }
 	HAL_GPIO_EXTI_IRQHandler(B1_Pin); // Clear interrupt flags
 }
 
@@ -412,11 +414,11 @@ uint32_t pollADC(void){
 	//TO DO:
 	//TASK 2
 	// Complete the function body
-    uint32_t timeout = HAL_GetTick();//in milliseconds
+    uint32_t timeout = 100;//in milliseconds
     //timeout = 500ms?
        
     HAL_ADC_Start(&hadc);
-    HAL_ADC_PollForConversion(&hadc, timeout);
+    HAL_ADC_PollForConversion(&hadc, 100);
     uint32_t val = HAL_ADC_GetValue(&hadc);
     HAL_ADC_Stop(&hadc);
     //ADC has 12-bit resolultion
@@ -427,9 +429,10 @@ uint32_t ADCtoCRR(uint32_t adc_val){
 	//TO DO:
 	//TASK 2
 	// Complete the function body
-	//HINT: The CRR value for 100% DC is 47999 (DC = CRR/ARR = CRR/47999)
+	//HINT: The CCR value for 100% DC is 47999 (DC = CRR/ARR = CRR/47999)
 	//HINT: The ADC range is approx 0 - 4095
 	//HINT: Scale number from 0-4096 to 0 - 47999
+    __HAL_TIM_SetCompare(htim3, TIM_CHANNEL_4, adc_val);
 	return val;
 }
 
