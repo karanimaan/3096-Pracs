@@ -400,7 +400,9 @@ void EXTI0_1_IRQHandler(void)
 	//TO DO:
 	//TASK 1
 	//Switch delay frequency
-
+    //HAL_Delay(1000);//1000ms => 1 Hz
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);//toggle blue LED
+    HAL_Delay(500);//500ms => 2 Hz
 	HAL_GPIO_EXTI_IRQHandler(B1_Pin); // Clear interrupt flags
 }
 
