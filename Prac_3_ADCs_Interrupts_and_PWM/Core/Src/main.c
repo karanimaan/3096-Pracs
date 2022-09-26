@@ -439,7 +439,7 @@ uint32_t ADCtoCRR(uint32_t adc_val){
 	//HINT: Scale number from 0-4096 to 0 - 
     
     //if the value is 200, then green LED will be on for 200 cycles and of for 3896 cycles
-    unint32t ccr_val = 200;//change to suitable value
+    uint32_t ccr_val = 200;//change to suitable value
     HAL_TIM_PWM_Start(&hadc, TIM_CHANNEL_4);
     __HAL_TIM_SetCompare(htim3, TIM_CHANNEL_4, ccr_val);
     HAL_ADC_Start_IT(&hadc);
