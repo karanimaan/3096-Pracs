@@ -52,6 +52,7 @@ DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
 char buffer[10];
+int delay = 1000;
 
 //TO DO:
 //TASK 1
@@ -114,7 +115,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   // For UART Transmit
-  char buffer[10];
+  char buffer[20];
 #define UART_TIMEOUT 1000
 
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4); //Start the PWM on TIM3 Channel 4 (Green LED)
@@ -130,17 +131,17 @@ int main(void)
 	  //Test your pollADC function and display via UART
 	  uint32_t adc_val = pollADC();
       sprintf(buffer, "adc_val = %d \r\n", adc_val);
-      HAL_UART_Transmit(&huart2, buffer, size(buffer), UART_TIMEOUT);
+      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
 
 	  //TASK 3
 	  //Test your ADCtoCRR function. Display CRR value via UART
-      sprintf(buffer, "dc_val = %d \r\n", ADCtoCRR(adc_val));
-      HAL_UART_Transmit(&huart2, buffer, size(buffer), UART_TIMEOUT);
+      sprintf(buffer, "duty cycle = %d \r\n", ADCtoCRR(adc_val));
+      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
 
 	  //TASK 4
 	  //Complete rest of implementation
 
-	  HAL_Delay (500); // wait for 500 ms
+	  HAL_Delay (delay); // wait for 500 ms
 
     /* USER CODE END WHILE */
 
@@ -407,15 +408,17 @@ void EXTI0_1_IRQHandler(void){   // interrupt which changes LED blinking frequen
 	//TASK 1
 	//Switch delay frequency
     //HAL_Delay(1000);//1000ms => 1 Hz
-    uint32_t tick = 100;
+    uint32_t tick = 1;
     uint32_t tickStart = HAL_GetTick();
         
     if ((HAL_GetTick()-tickStart) <= tick) {
-        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);// toggle blue LED
-        HAL_Delay(500);//500ms => 2 Hz
-        HAL_GPIO_EXTI_IRQHandler(B1_Pin); // clear interrupt flags
+    	if (delay == 1000)
+    		delay = 500;
+    	else
+    		delay = 1000;
     }
-    
+    HAL_GPIO_EXTI_IRQHandler(B1_Pin); // clear interrupt flags
+
 }
 
 uint32_t pollADC(void){     // get ADC value
@@ -429,8 +432,6 @@ uint32_t pollADC(void){     // get ADC value
     uint32_t val = HAL_ADC_GetValue(&hadc);
     HAL_ADC_Stop(&hadc);
     
-    sprintf(buffer, "adc = %d", val);
-    HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
     //ADC has 12-bit resolution
 	return val;
 }
@@ -439,18 +440,20 @@ uint32_t ADCtoCRR(uint32_t adc_val){    // convert ADC value to PWM duty cycle (
 	//TO DO:
 	//TASK 3
 	// Complete the function body
-	//HINT: The CCR value for 100% DC is 47999 (DC = CCR/ARR = CRR/47999)
+	//HINT: The CCR value for 100% DC is 47999 (DC = CCR/ARR = CCR/47999)
 	//HINT: The ADC range is approx 0 - 4095 => adc_val in range(0, 4095)
 	//HINT: Scale number from 0-4096 to 0 - 
     
     //if the value is 200, then green LED will be on for 200 cycles and of for 3896 cycles
-    uint32_t ccr_val = 200;//change to suitable value
+    uint32_t ccr_val = adc_val* 47999/4095 ;//change to suitable value
     uint32_t arr_val = 47999;
-//     HAL_TIM_PWM_Start(&hadc, TIM_CHANNEL_4);
-    __HAL_TIM_SetCompare(htim3, TIM_CHANNEL_4, ccr_val);
+    HAL_TIM_PWM_Start(&hadc, TIM_CHANNEL_4);
     HAL_ADC_Start_IT(&hadc);
+    uint32_t val = 100*ccr_val/arr_val;
+    __HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_4, ccr_val);
     HAL_ADC_Stop_IT(&hadc);
-    uint32_t val = ccr_val/arr_val;
+
+
 	return val;
 }
 
