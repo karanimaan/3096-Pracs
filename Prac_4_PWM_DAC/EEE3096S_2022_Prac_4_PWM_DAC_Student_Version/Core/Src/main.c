@@ -78,6 +78,7 @@ static uint32_t triangleLUT[NS] = {0, 16, 32, 48, 64, 81, 97, 113, 129, 145, 161
 113, 97, 81, 64, 48, 32, 16, 0};
 
 uint32_t TIM2_ticks = TIM2CLK/(NS*F_signal);
+uint32_t DestAddress = (uint32_t) &(TIM3->CCR1);
 
 /* USER CODE BEGIN PV */
 
@@ -116,8 +117,8 @@ int main(void)
   /* USER CODE BEGIN Init */
   HAL_TIMEx_PWMN_Start(&htim3, hdma_tim2_ch1);//task 4 start TIM3 in PWM mode on c1
   HAL_TIM_OC_Start(&htim2, hdma_tim2_ch1);//task 4 start TIM2 in OC mode on c1
-  HAL_DMA_Start_IT(&hdma_tim2_ch1, sinLUT, &htim3, 32);//task 4 start DMA interrupt IT
-  __HAL_TIM_ENABLE_DMA(htim2,TIM_DMA_CC1);//task 4
+  HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)sinLUT, DestAddress, NS);//task 4 start DMA interrupt IT
+  __HAL_TIM_ENABLE_DMA(&htim2, TIM_DMA_CC1);//task 4
   /* USER CODE END Init */
 
   /* Configure the system clock */
