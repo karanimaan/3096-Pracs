@@ -79,7 +79,7 @@ uint32_t triangleLUT[NS] = {0, 16, 32, 48, 64, 81, 97, 113, 129, 145, 161, 177, 
 
 uint32_t TIM2_ticks = TIM2CLK/(NS*F_signal);
 uint32_t DestAddress = (uint32_t) &(TIM3->CCR1);
-int lutStatus = 0;// 0: sine, 1: sawtooth, 2: triangle
+uint8_t lutStatus = 0;// 0: sine, 1: sawtooth, 2: triangle
 
 /* USER CODE BEGIN PV */
 
@@ -353,18 +353,17 @@ static void MX_GPIO_Init(void)
 
 }
 
-/* USER CODE BEGIN 4 */
-void EXTI0_1_IRQHandler(void){
-	//TO DO:
-	//TASK 5
-	//Switch delay frequency
-    uint32_t tick = 1;
-    uint32_t tickStart = HAL_GetTick();
+void EXTI0_1_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI0_1_IRQn 0 */
+	uint32_t tick = 1;
+	uint32_t tickStart = HAL_GetTick();
 
-    if ((HAL_GetTick()-tickStart) <= tick) {
+	if ((HAL_GetTick()-tickStart) <= tick) {
 
-    	__HAL_TIM_DISABLE_DMA(&htim2, TIM_DMA_CC1);
-    	switch(lutStatus){
+		__HAL_TIM_DISABLE_DMA(&htim2, TIM_DMA_CC1);
+
+		switch(lutStatus){
 			case 1:
 				HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)sawtoothLUT, DestAddress, NS);
 				__HAL_TIM_ENABLE_DMA(&htim2, TIM_DMA_CC1);
@@ -377,11 +376,14 @@ void EXTI0_1_IRQHandler(void){
 				HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)sinLUT, DestAddress, NS);
 				__HAL_TIM_ENABLE_DMA(&htim2, TIM_DMA_CC1);
 				lutStatus = 1;
-    	}
+		}
 
-    }
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0); // clear interrupt flags
+	}
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0); // clear interrupt flags
+  /* USER CODE END EXTI0_1_IRQn 0 */
+  /* USER CODE BEGIN EXTI0_1_IRQn 1 */
 
+  /* USER CODE END EXTI0_1_IRQn 1 */
 }
 
 /**
