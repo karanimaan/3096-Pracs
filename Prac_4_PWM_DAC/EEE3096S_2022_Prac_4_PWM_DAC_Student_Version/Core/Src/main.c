@@ -47,7 +47,7 @@ TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 DMA_HandleTypeDef hdma_tim2_ch1;
 
-static uint32_t sinLUT[NS] = {512, 537, 562, 587, 612, 637, 661, 685, 709, 732, 754, 776, 798, 818, 838,
+uint32_t sinLUT[NS] = {512, 537, 562, 587, 612, 637, 661, 685, 709, 732, 754, 776, 798, 818, 838,
 857, 875, 893, 909, 925, 939, 952, 965, 976, 986, 995, 1002, 1009, 1014, 1018,
 1021, 1023, 1023, 1022, 1020, 1016, 1012, 1006, 999, 990, 981, 970, 959, 946, 932,
 917, 901, 884, 866, 848, 828, 808, 787, 765, 743, 720, 697, 673, 649, 624,
@@ -57,7 +57,7 @@ static uint32_t sinLUT[NS] = {512, 537, 562, 587, 612, 637, 661, 685, 709, 732, 
 58, 71, 84, 98, 114, 130, 148, 166, 185, 205, 225, 247, 269, 291, 314,
 338, 362, 386, 411, 436, 461, 486, 511};
 
-static uint32_t sawtoothLUT[NS] = {0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 81, 89, 97, 105, 113,
+uint32_t sawtoothLUT[NS] = {0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 81, 89, 97, 105, 113,
 121, 129, 137, 145, 153, 161, 169, 177, 185, 193, 201, 209, 217, 226, 234,
 242, 250, 258, 266, 274, 282, 290, 298, 306, 314, 322, 330, 338, 346, 354,
 362, 371, 379, 387, 395, 403, 411, 419, 427, 435, 443, 451, 459, 467, 475,
@@ -67,7 +67,7 @@ static uint32_t sawtoothLUT[NS] = {0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 81, 89,
 846, 854, 862, 870, 878, 886, 894, 902, 910, 918, 926, 934, 942, 951, 959,
 967, 975, 983, 991, 999, 1007, 1015, 0};
 
-static uint32_t triangleLUT[NS] = {0, 16, 32, 48, 64, 81, 97, 113, 129, 145, 161, 177, 193, 209, 226,
+uint32_t triangleLUT[NS] = {0, 16, 32, 48, 64, 81, 97, 113, 129, 145, 161, 177, 193, 209, 226,
 242, 258, 274, 290, 306, 322, 338, 354, 371, 387, 403, 419, 435, 451, 467,
 483, 499, 516, 532, 548, 564, 580, 596, 612, 628, 644, 661, 677, 693, 709,
 725, 741, 757, 773, 789, 806, 822, 838, 854, 870, 886, 902, 918, 934, 951,
@@ -79,6 +79,7 @@ static uint32_t triangleLUT[NS] = {0, 16, 32, 48, 64, 81, 97, 113, 129, 145, 161
 
 uint32_t TIM2_ticks = TIM2CLK/(NS*F_signal);
 uint32_t DestAddress = (uint32_t) &(TIM3->CCR1);
+int lutStatus = 0;// 0: sine, 1: sawtooth, 2: triangle
 
 /* USER CODE BEGIN PV */
 
@@ -110,13 +111,12 @@ int main(void)
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
-
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  HAL_TIMEx_PWMN_Start(&htim3, hdma_tim2_ch1);//task 4 start TIM3 in PWM mode on c1
-  HAL_TIM_OC_Start(&htim2, hdma_tim2_ch1);//task 4 start TIM2 in OC mode on c1
+  HAL_TIMEx_PWMN_Start(&htim3, TIM_CHANNEL_1);//task 4 start TIM3 in PWM mode on c1
+  HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_1);//task 4 start TIM2 in OC mode on c1
   HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)sinLUT, DestAddress, NS);//task 4 start DMA interrupt IT
   __HAL_TIM_ENABLE_DMA(&htim2, TIM_DMA_CC1);//task 4
   /* USER CODE END Init */
@@ -354,8 +354,35 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void EXTI0_1_IRQHandler(void){
+	//TO DO:
+	//TASK 5
+	//Switch delay frequency
+    uint32_t tick = 1;
+    uint32_t tickStart = HAL_GetTick();
 
-/* USER CODE END 4 */
+    if ((HAL_GetTick()-tickStart) <= tick) {
+
+    	__HAL_TIM_DISABLE_DMA(&htim2, TIM_DMA_CC1);
+    	switch(lutStatus){
+			case 1:
+				HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)sawtoothLUT, DestAddress, NS);
+				__HAL_TIM_ENABLE_DMA(&htim2, TIM_DMA_CC1);
+				lutStatus = 2;
+			case 2:
+				HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)triangleLUT, DestAddress, NS);
+				__HAL_TIM_ENABLE_DMA(&htim2, TIM_DMA_CC1);
+				lutStatus = 0;
+			default:
+				HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)sinLUT, DestAddress, NS);
+				__HAL_TIM_ENABLE_DMA(&htim2, TIM_DMA_CC1);
+				lutStatus = 1;
+    	}
+
+    }
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0); // clear interrupt flags
+
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
