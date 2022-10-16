@@ -77,6 +77,8 @@ uint32_t triangleLUT[NS] = {0, 16, 32, 48, 64, 81, 97, 113, 129, 145, 161, 177, 
 354, 338, 322, 306, 290, 274, 258, 242, 226, 209, 193, 177, 161, 145, 129,
 113, 97, 81, 64, 48, 32, 16, 0};
 
+uint32_t TIM2_ticks = TIM2CLK/(NS*F_signal);
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -127,9 +129,7 @@ int main(void)
   MX_DMA_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
-  /* USER CODE BEGIN 2 */
 
-  /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -200,9 +200,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 1;
+  htim2.Init.Prescaler = 32;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 147999;
+  htim2.Init.Period = 14799;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
