@@ -1,4 +1,4 @@
-%For generating the loop up table for a 10-bit DAC
+%For generating the look up table for a 10-bit DAC
 %Cited: https://deepbluembedded.com/stm32-dac-sine-wave-generation-stm32-dac-dma-timer-example/
 
 clear; clc;   % Clear The Previous Points
