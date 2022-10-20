@@ -52,7 +52,7 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
-char buffer[10];
+char buffer[20];
 int delay = 1000;
 int bit_duration = 100;
 int samples_sent;
@@ -72,10 +72,10 @@ static void MX_ADC_Init(void);
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 void EXTI0_1_IRQHandler(void);
-uint16_t pollADC(void);
-uint16_t ADCtoCRR(uint16_t adc_val);
-void sendData(uint16_t adc_val);
-void sendCheckpoint(uint16_t samples);
+uint32_t pollADC(void);
+uint32_t ADCtoCRR(uint32_t adc_val);
+void sendData(uint32_t adc_val);
+void sendCheckpoint(uint32_t samples);
 
 /* USER CODE END PFP */
 
@@ -126,7 +126,7 @@ int main(void)
 
   //GPIO Pin state
   GPIO_PinState state;
-  uint16_t adc_val;
+  uint32_t adc_val;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -136,10 +136,11 @@ int main(void)
 	  state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
 	  if (state)
 	  {
-		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);//LED to indicate pot being polled
 		  adc_val = pollADC();
-		  sendData(adc_val);
-		  samples_sent+=1;
+		  sendData(adc_val);//send data through GPIO pin B6
+		  samples_sent+=1;//increment number od samples sent
+		  //sendCheckpoint(samples_sent);
 	  }
 	  else
 	  {
@@ -147,12 +148,13 @@ int main(void)
 	  }
 
 	  //Test your pollADC function and display via UART
-      sprintf(buffer, "adc_val = %d \r\n", adc_val);
-      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
+      //sprintf(buffer, "adc_val = %d \r\n", adc_val);
+      //HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
 
 	  //Test your ADCtoCRR function. Display CRR value via UART
-      sprintf(buffer, "duty cycle = %d \r\n", ADCtoCRR(adc_val));
-      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
+      //sprintf(buffer, "duty cycle = %d \r\n", ADCtoCRR(adc_val));
+      //HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
+
 
 
 	  //Complete rest of implementation
@@ -422,7 +424,7 @@ static void MX_GPIO_Init(void)
 
 
 
-uint16_t pollADC(void){     // get ADC value
+uint32_t pollADC(void){     // get ADC value
 	//TO DO:
 	//TASK 2
 	// Complete the function body
@@ -437,7 +439,7 @@ uint16_t pollADC(void){     // get ADC value
 	return val;
 }
 
-uint16_t ADCtoCRR(uint16_t adc_val){    // convert ADC value to PWM duty cycle (CRR) value
+uint32_t ADCtoCRR(uint32_t adc_val){    // convert ADC value to PWM duty cycle (CRR) value
 	//TO DO:
 	//TASK 3
 	// Complete the function body
@@ -458,11 +460,40 @@ uint16_t ADCtoCRR(uint16_t adc_val){    // convert ADC value to PWM duty cycle (
 	return val;
 }
 
-void sendData(uint16_t data){
+void sendData(uint32_t data){
+
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_SET);//Start bit and Data transmission mode selection
+	HAL_Delay(bit_duration*2);
+
 	GPIO_PinState state;
+	uint32_t temp=data;
+	for (int i = 16; i>0 ; i--)//iterate through data bit by bit, LSB first, first 16 bits sent
+	{
+        if((temp & 0x0001)==1)//isolate LSB
+        {
+        	state=GPIO_PIN_SET;//set pin high
+        }
+        else state=GPIO_PIN_RESET;//set pin low
+
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, state);// set GPIO pin B6 low/high
+        HAL_Delay(bit_duration);//duration bit is set high/low
+
+        temp >>= 1;//shift data to the left, next bit is now LSB
+
+	}
+}
+void sendCheckpoint(uint32_t samples)//refer to sendData() comments, same implementation
+{
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_SET);//Start bit
+	HAL_Delay(bit_duration);
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_RESET);//Checkpoint mode selection
+	HAL_Delay(bit_duration);
+
+	GPIO_PinState state;
+	uint32_t temp=samples;
 	for (int i = 16; i>0 ; i--)
 	{
-        if((data & 0x0001)==1)
+        if((temp & 0x0001)==1)
         {
         	state=GPIO_PIN_SET;
         }
@@ -471,12 +502,8 @@ void sendData(uint16_t data){
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, state);
         HAL_Delay(bit_duration);
 
-        data >>= 1;
+        temp >>= 1;
 	}
-}
-void sendCheckpoint(uint16_t samples)
-{
-
 }
 /* USER CODE END 4 */
 
