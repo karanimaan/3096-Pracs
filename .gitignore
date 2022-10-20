@@ -73,5 +73,4 @@ ctrlp.root
 /CMakeLists.txt
 **/.settings/*
 **/makefile
-/Prac_3_ADCs_Interrupts_and_PWM/.settings/
-/Prac_3_ADCs_Interrupts_and_PWM/Debug/
+**/Debug/*
