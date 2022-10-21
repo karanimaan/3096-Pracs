@@ -143,37 +143,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-	  uint8_t pot_val = 0;
-	      for (int i = 0; i < NUM_BITS; ++i) {
-	    	  GPIO_PinState receive_pin = HAL_GPIO_ReadPin(GPIOA, GPIO_Pin_7);	// Read data from PA7
-	          if (receive_pin == 1)	// == GPIO_PIN_SET
-	              pot_val |= 1<<i;    // add 1 to i'th index
-	      }
-
   }
   /* USER CODE END 3 */
-}
-
-uint32_t ADCtoCRR(uint32_t adc_val){    // convert ADC value to PWM duty cycle (CRR) value
-	//TO DO:
-	//TASK 3
-	// Complete the function body
-	//HINT: The CCR value for 100% DC is 47999 (DC = CCR/ARR = CCR/47999)
-	//HINT: The ADC range is approx 0 - 4095 => adc_val in range(0, 4095)
-	//HINT: Scale number from 0-4096 to 0 -
-
-    //if the value is 200, then green LED will be on for 200 cycles and of for 3896 cycles
-    uint32_t ccr_val = adc_val* 47999/4095 ;//change to suitable value
-    uint32_t arr_val = 47999;
-    HAL_TIM_PWM_Start(&hadc, TIM_CHANNEL_4);
-    HAL_ADC_Start_IT(&hadc);
-    uint32_t val = 100*ccr_val/arr_val;
-    __HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_4, ccr_val);
-    HAL_ADC_Stop_IT(&hadc);
-
-
-	return val;
 }
 
 /**
