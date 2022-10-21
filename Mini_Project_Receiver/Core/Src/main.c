@@ -46,6 +46,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -82,9 +83,13 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
+  MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
+
     GPIO_PinState receive_pin;
     uint8_t start = 0;
+	#define NUM_BITS 12
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -95,16 +100,16 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  receive_pin = HAL_GPIO_ReadPin(GPIOA, GPIO_Pin_7);	// Read data from PA7
+	  receive_pin = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_7);	// Read data from PA7
       if (receive_pin == 1)	// == GPIO_PIN_SET
         start = 1;
 
       if (start) {
-          uint8_t option = HAL_GPIO_ReadPin(GPIOA, GPIO_Pin_7);
+          uint8_t option = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_7);
 
           uint8_t pot_val = 0;
           for (int i = 0; i < NUM_BITS; ++i) {
-              receive_pin = HAL_GPIO_ReadPin(GPIOA, GPIO_Pin_7);    // Read data from PA7
+              receive_pin = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_7);    // Read data from PA7
               if (receive_pin == 1)    // == GPIO_PIN_SET
                   pot_val |= 1 << i;    // add 1 to i'th index
           }
@@ -112,27 +117,6 @@ int main(void)
 
   }
   /* USER CODE END 3 */
-}
-
-uint32_t ADCtoCRR(uint32_t adc_val){    // convert ADC value to PWM duty cycle (CRR) value
-	//TO DO:
-	//TASK 3
-	// Complete the function body
-	//HINT: The CCR value for 100% DC is 47999 (DC = CCR/ARR = CCR/47999)
-	//HINT: The ADC range is approx 0 - 4095 => adc_val in range(0, 4095)
-	//HINT: Scale number from 0-4096 to 0 -
-
-    //if the value is 200, then green LED will be on for 200 cycles and of for 3896 cycles
-    uint32_t ccr_val = adc_val* 47999/4095 ;//change to suitable value
-    uint32_t arr_val = 47999;
-    HAL_TIM_PWM_Start(&hadc, TIM_CHANNEL_4);
-    HAL_ADC_Start_IT(&hadc);
-    uint32_t val = 100*ccr_val/arr_val;
-    __HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_4, ccr_val);
-    HAL_ADC_Stop_IT(&hadc);
-
-
-	return val;
 }
 
 /**
@@ -168,6 +152,26 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin : PA7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
