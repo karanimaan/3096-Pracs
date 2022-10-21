@@ -136,7 +136,7 @@ int main(void)
 	  state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
 	  if (state)
 	  {
-		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);//LED to indicate pot being polled
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);   // LED to indicate pot being polled
 		  adc_val = pollADC();
 		  sendData(adc_val);//send data through GPIO pin B6
 		  samples_sent+=1;//increment number od samples sent
@@ -469,16 +469,15 @@ void sendData(uint32_t data){
 	uint32_t temp=data;
 	for (int i = 16; i>0 ; i--)//iterate through data bit by bit, LSB first, first 16 bits sent
 	{
-        if((temp & 0x0001)==1)//isolate LSB
-        {
-        	state=GPIO_PIN_SET;//set pin high
-        }
-        else state=GPIO_PIN_RESET;//set pin low
+        if ((data & 0x0001)==1)  // if data's last bit == 1
+        	state=GPIO_PIN_SET;     // state = HIGH
+        else
+            state=GPIO_PIN_RESET;  // state = LOW
 
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, state);// set GPIO pin B6 low/high
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, state);    // write data bit by bit
         HAL_Delay(bit_duration);//duration bit is set high/low
 
-        temp >>= 1;//shift data to the left, next bit is now LSB
+        temp >>= 1; // bitwise shift data to the right
 
 	}
 }
@@ -504,6 +503,10 @@ void sendCheckpoint(uint32_t samples)//refer to sendData() comments, same implem
 
         temp >>= 1;
 	}
+}
+void sendCheckpoint(uint16_t samples)
+{
+
 }
 /* USER CODE END 4 */
 

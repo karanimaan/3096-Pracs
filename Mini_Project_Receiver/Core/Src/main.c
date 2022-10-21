@@ -1,21 +1,18 @@
 /* USER CODE BEGIN Header */
 /**
-*******************************************************
-Info:		STM32 ADCs, GPIO Interrupts and PWM with HAL
-Author:		Amaan Vally
-*******************************************************
-In this practical you will learn to use the ADC on the STM32 using the HAL.
-Here, we will be measuring the voltage on a potentiometer and using its value
-to adjust the brightness of the on board LEDs. We set up an interrupt to switch the
-display between the blue and green LEDs.
-
-Code is also provided to send data from the STM32 to other devices using UART protocol
-by using HAL. You will need Putty or a Python script to read from the serial port on your PC.
-
-UART Connections are as follows: 5V->5V GND->GND RXD->PA2 TXD->PA3(unused).
-Open device manager and go to Ports. Plug in the USB connector with the STM powered on.
-Check the port number (COMx). Open up Putty and create a new Serial session on that COMx
-with baud rate of 9600.
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2022 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
   ******************************************************************************
   */
 /* USER CODE END Header */
@@ -34,7 +31,6 @@ with baud rate of 9600.
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define UART_TIMEOUT 1000
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -43,34 +39,14 @@ with baud rate of 9600.
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-TIM_HandleTypeDef htim3;
-
-UART_HandleTypeDef huart2;
-DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
-char buffer[10];
-int delay = 1000;
-int bit_duration = 100;
-int samples_received;
-
-//TO DO:
-//TASK 1
-//Create global variables for debouncing and delay interval
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
-static void MX_USART2_UART_Init(void);
-static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
-void EXTI0_1_IRQHandler(void);
-uint16_t ADCtoCRR(uint16_t adc_val);
-void receiveData();
-void receiveCheckpoint();
 
 /* USER CODE END PFP */
 
@@ -106,62 +82,57 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_USART2_UART_Init();
-  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-
-  // For UART Transmit
-  char buffer[20];
-  samples_received=0;
-  //Start the PWM on TIM3 Channel 4 (Green LED)
-  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
-
-  //GPIO Pin state
-  GPIO_PinState state;
-
-
-  uint16_t adc_val;
+    GPIO_PinState receive_pin;
+    uint8_t start = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
-	  if (state)
-	  {
-
-
-		  //start condition
-		  	  receiveData();
-		  	  samples_received+=1;
-	  }
-	  else
-	  {
-		  //continue listening
-	  }
-
-	  //Test your pollADC function and display via UART
-      sprintf(buffer, "adc_val = %d \r\n", adc_val);
-      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
-
-	  //Test your ADCtoCRR function. Display CRR value via UART
-      sprintf(buffer, "duty cycle = %d \r\n", ADCtoCRR(adc_val));
-      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
-
-
-	  //Complete rest of implementation
-
-
-	  HAL_Delay (delay); // wait for 500 ms
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  receive_pin = HAL_GPIO_ReadPin(GPIOA, GPIO_Pin_7);	// Read data from PA7
+      if (receive_pin == 1)	// == GPIO_PIN_SET
+        start = 1;
+
+      if (start) {
+          uint8_t option = HAL_GPIO_ReadPin(GPIOA, GPIO_Pin_7);
+
+          uint8_t pot_val = 0;
+          for (int i = 0; i < NUM_BITS; ++i) {
+              receive_pin = HAL_GPIO_ReadPin(GPIOA, GPIO_Pin_7);    // Read data from PA7
+              if (receive_pin == 1)    // == GPIO_PIN_SET
+                  pot_val |= 1 << i;    // add 1 to i'th index
+          }
+      }
+
   }
   /* USER CODE END 3 */
+}
+
+uint32_t ADCtoCRR(uint32_t adc_val){    // convert ADC value to PWM duty cycle (CRR) value
+	//TO DO:
+	//TASK 3
+	// Complete the function body
+	//HINT: The CCR value for 100% DC is 47999 (DC = CCR/ARR = CCR/47999)
+	//HINT: The ADC range is approx 0 - 4095 => adc_val in range(0, 4095)
+	//HINT: Scale number from 0-4096 to 0 -
+
+    //if the value is 200, then green LED will be on for 200 cycles and of for 3896 cycles
+    uint32_t ccr_val = adc_val* 47999/4095 ;//change to suitable value
+    uint32_t arr_val = 47999;
+    HAL_TIM_PWM_Start(&hadc, TIM_CHANNEL_4);
+    HAL_ADC_Start_IT(&hadc);
+    uint32_t val = 100*ccr_val/arr_val;
+    __HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_4, ccr_val);
+    HAL_ADC_Stop_IT(&hadc);
+
+
+	return val;
 }
 
 /**
@@ -179,10 +150,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL12;
-  RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -192,187 +160,18 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
     Error_Handler();
   }
-}
-
-/**
-  * @brief TIM3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM3_Init(void)
-{
-
-  /* USER CODE BEGIN TIM3_Init 0 */
-
-  /* USER CODE END TIM3_Init 0 */
-
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
-
-  /* USER CODE BEGIN TIM3_Init 1 */
-
-  /* USER CODE END TIM3_Init 1 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 0;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 47999;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
-  HAL_TIM_MspPostInit(&htim3);
-
-}
-
-/**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART2_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 9600;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
-
-}
-
-/**
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void)
-{
-
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
-
-  /* DMA interrupt init */
-  /* DMA1_Channel4_5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel4_5_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel4_5_IRQn);
-
-}
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOF_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : PA0 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : LD4_Pin */
-  GPIO_InitStruct.Pin = LD4_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LD4_GPIO_Port, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
 
-
-
-
-uint16_t ADCtoCRR(uint16_t adc_val){    // convert ADC value to PWM duty cycle (CRR) value
-	//TO DO:
-	//TASK 3
-	// Complete the function body
-	//HINT: The CCR value for 100% DC is 47999 (DC = CCR/ARR = CCR/47999)
-	//HINT: The ADC range is approx 0 - 4095 => adc_val in range(0, 4095)
-	//HINT: Scale number from 0-4096 to 0 - 
-    
-    //if the value is 200, then green LED will be on for 200 cycles and of for 3896 cycles
-    uint32_t ccr_val = adc_val* 47999/4095 ;//change to suitable value
-    uint32_t arr_val = 47999;
-
-    uint32_t val = 100*ccr_val/arr_val;
-
-	return val;
-}
-
-void receiveData(){
-
-}
-void receiveCheckpoint()
-{
-
-}
 /* USER CODE END 4 */
 
 /**
