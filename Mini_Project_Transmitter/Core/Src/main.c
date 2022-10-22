@@ -55,7 +55,7 @@ DMA_HandleTypeDef hdma_usart2_tx;
 char buffer[20];
 int delay = 1000;
 int bit_duration = 1000;
-int samples_sent;
+uint32_t samples_sent;
 
 //TO DO:
 //TASK 1
@@ -140,13 +140,20 @@ int main(void)
 		  adc_val = pollADC();
 
 	  	  //Test your pollADC function and display via UART
-	      sprintf(buffer, "adc val = %d \r\n", adc_val);
-	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
+	      //sprintf(buffer, "adc val = %d \r\n", adc_val);
+	      //HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
 
 
 		  sendData(adc_val);//send data through GPIO pin B6
 		  samples_sent+=1;//increment number od samples sent
-		  //sendCheckpoint(samples_sent);
+
+	      sprintf(buffer, "_______\r\n", samples_sent);
+	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
+
+		  sendCheckpoint(samples_sent);
+	  	  //Test your sample function and display via UART
+	      sprintf(buffer, "samples sent = %d \r\n", samples_sent);
+	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
 	  }
 	  else
 	  {
@@ -503,13 +510,13 @@ void sendData(uint32_t data){
 void sendCheckpoint(uint32_t samples)//refer to sendData() comments, same implementation
 {
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_SET);//Start bit
-	HAL_Delay(bit_duration);
+	HAL_Delay(500);
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_RESET);//Checkpoint mode selection
-	HAL_Delay(bit_duration);
+	HAL_Delay(500);
 
 	GPIO_PinState state;
 	uint32_t temp=samples;
-	for (int i = 16; i>0 ; i--)
+	for (int i = 8; i>0 ; i--)
 	{
         if((temp & 0x0001)==1)
         {
@@ -517,8 +524,13 @@ void sendCheckpoint(uint32_t samples)//refer to sendData() comments, same implem
         }
         else state=GPIO_PIN_RESET;
 
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, state);//LED for flashing
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, state);
         HAL_Delay(bit_duration);
+
+    	  //Test bit state for sample function and display via UART
+        sprintf(buffer, "bit state = %d \r\n", state);
+        HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
 
         temp >>= 1;
 	}
