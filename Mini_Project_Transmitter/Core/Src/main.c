@@ -133,7 +133,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
+	  state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);  // Push button
 	  if (state)
 	  {
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);   // LED to indicate pot being polled
