@@ -504,10 +504,7 @@ void sendCheckpoint(uint32_t samples)//refer to sendData() comments, same implem
         temp >>= 1;
 	}
 }
-void sendCheckpoint(uint16_t samples)
-{
 
-}
 /* USER CODE END 4 */
 
 /**

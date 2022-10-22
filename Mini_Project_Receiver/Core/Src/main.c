@@ -33,7 +33,7 @@
 /* USER CODE BEGIN PD */
 
 #define NUM_BITS 12
-#define BIT_PERIOD 100
+#define BIT_PERIOD 1000
 
 /* USER CODE END PD */
 
@@ -60,8 +60,15 @@ static void MX_ADC_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+GPIO_PinState res;
+
 GPIO_PinState read_pin() {
-	return HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1);	// Read data from PA1
+	res = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1);
+	if (res)
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, 1);
+	else
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, 0);
+	return res;	// Read data from PA1
 }
 
 GPIO_PinState wait_then_read_pin() {
@@ -109,20 +116,19 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+  while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 
-      //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, 1);    // write 1 to PA0 (For testing)
+      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, 1);    // write 1 to PA0 (For testing)
 
       if (read_pin() == 1)	// == GPIO_PIN_SET
         start = 1;
 
       if (start) {
           uint8_t option = wait_then_read_pin();
-          uint8_t pot_val = 0;
+          uint16_t pot_val = 0;
           for (int i = 0; i < NUM_BITS; ++i) {
               if (wait_then_read_pin() == 1)    // == GPIO_PIN_SET
                   pot_val |= 1 << i;    // add 1 to i'th index
@@ -236,9 +242,13 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PA0 */
   GPIO_InitStruct.Pin = GPIO_PIN_0;
@@ -250,8 +260,15 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : PA1 */
   GPIO_InitStruct.Pin = GPIO_PIN_1;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PC8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 }
 
