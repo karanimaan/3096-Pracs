@@ -54,7 +54,7 @@ DMA_HandleTypeDef hdma_usart2_tx;
 /* USER CODE BEGIN PV */
 char buffer[20];
 int delay = 1000;
-int bit_duration = 100;
+int bit_duration = 1000;
 int samples_sent;
 
 //TO DO:
@@ -136,8 +136,14 @@ int main(void)
 	  state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);  // Push button
 	  if (state)
 	  {
-		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);   // LED to indicate pot being polled
+	   // LED to indicate pot being polled
 		  adc_val = pollADC();
+
+	  	  //Test your pollADC function and display via UART
+	      sprintf(buffer, "adc val = %d \r\n", adc_val);
+	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
+
+
 		  sendData(adc_val);//send data through GPIO pin B6
 		  samples_sent+=1;//increment number od samples sent
 		  //sendCheckpoint(samples_sent);
@@ -145,6 +151,7 @@ int main(void)
 	  else
 	  {
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
 	  }
 
 	  //Test your pollADC function and display via UART
@@ -469,17 +476,29 @@ void sendData(uint32_t data){
 	uint32_t temp=data;
 	for (int i = 16; i>0 ; i--)//iterate through data bit by bit, LSB first, first 16 bits sent
 	{
-        if ((data & 0x0001)==1)  // if data's last bit == 1
+        if ((temp & 0x0001)==1)  // if data's last bit == 1
+        	{
         	state=GPIO_PIN_SET;     // state = HIGH
+        	}
         else
-            state=GPIO_PIN_RESET;  // state = LOW
+        {
+        	state=GPIO_PIN_RESET;
+        }  // state = LOW
 
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, state);//LED for flashing
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, state);    // write data bit by bit
         HAL_Delay(bit_duration);//duration bit is set high/low
+
+  	  //Test your pollADC function and display via UART
+      sprintf(buffer, "bit state = %d \r\n", state);
+      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
+
 
         temp >>= 1; // bitwise shift data to the right
 
 	}
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_RESET);
+
 }
 void sendCheckpoint(uint32_t samples)//refer to sendData() comments, same implementation
 {
@@ -504,10 +523,7 @@ void sendCheckpoint(uint32_t samples)//refer to sendData() comments, same implem
         temp >>= 1;
 	}
 }
-void sendCheckpoint(uint16_t samples)
-{
 
-}
 /* USER CODE END 4 */
 
 /**
