@@ -33,7 +33,7 @@
 /* USER CODE BEGIN PD */
 
 #define NUM_BITS 12
-#define BAUD_RATE 100
+#define BIT_PERIOD 100
 
 /* USER CODE END PD */
 
@@ -65,7 +65,7 @@ GPIO_PinState read_pin() {
 }
 
 GPIO_PinState wait_then_read_pin() {
-	HAL_Delay(BAUD_RATE);
+	HAL_Delay(BIT_PERIOD);
 	return read_pin();
 }
 
@@ -115,7 +115,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, 1);    // write 1 to PA0
+      //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, 1);    // write 1 to PA0 (For testing)
 
       if (read_pin() == 1)	// == GPIO_PIN_SET
         start = 1;
