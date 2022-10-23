@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -33,7 +34,7 @@
 /* USER CODE BEGIN PD */
 
 #define NUM_BITS 12
-#define BIT_PERIOD 1000
+#define BIT_PERIOD 100
 
 /* USER CODE END PD */
 
@@ -45,6 +46,8 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc;
 
+UART_HandleTypeDef huart2;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -53,6 +56,7 @@ ADC_HandleTypeDef hadc;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC_Init(void);
+static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -107,10 +111,13 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_ADC_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
     GPIO_PinState transmit_pin;
     uint8_t start = 0;
+    uint8_t counter = 0;
+    char output[50];
 
   /* USER CODE END 2 */
 
@@ -127,13 +134,43 @@ int main(void)
         start = 1;
 
       if (start) {
-          uint8_t option = wait_then_read_pin();
+          start = 0;
+
+          //uint8_t option = wait_then_read_pin();
+
+          // read pot val
           uint16_t pot_val = 0;
-          for (int i = 0; i < NUM_BITS; ++i) {
+          for (int i = 0; i < NUM_BITS; ++i)
               if (wait_then_read_pin() == 1)    // == GPIO_PIN_SET
                   pot_val |= 1 << i;    // add 1 to i'th index
+
+          counter++;
+
+          // read trans_counter
+    	  int trans_counter = 0;
+          for (int i = 0; i < 8; ++i)
+        	  if (wait_then_read_pin() == 1)    // == GPIO_PIN_SET
+        		  trans_counter |= 1 << i;    // add 1 to i'th index
+
+          // compare counters
+          if (trans_counter == counter) {
+              // turn LED on for 2 seconds
+              HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, 1);
+              HAL_Delay(2000);
+              HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, 0);
+          } else {
+              counter = trans_counter;
+              // flash LED quickly for 2 seconds
+              for (int i = 0; i < 10; ++i) {
+                  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
+                  HAL_Delay(200);
+              }
           }
-          start = 0;
+
+          // Send output string to PC using UART
+          sprintf(output, "pot value = %d\n"
+                          "counter = %d\n\n", pot_val, counter);
+          HAL_UART_Transmit(&huart2, output, strlen(output), 1000);
       }
 
   }
@@ -228,6 +265,41 @@ static void MX_ADC_Init(void)
   /* USER CODE BEGIN ADC_Init 2 */
 
   /* USER CODE END ADC_Init 2 */
+
+}
+
+/**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 38400;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
 
 }
 

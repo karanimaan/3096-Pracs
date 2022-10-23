@@ -54,7 +54,7 @@ DMA_HandleTypeDef hdma_usart2_tx;
 /* USER CODE BEGIN PV */
 char buffer[20];
 int delay = 1000;
-int bit_duration = 1000;
+int bit_duration = 100;
 int samples_sent;
 
 //TO DO:
@@ -146,7 +146,7 @@ int main(void)
 
 		  sendData(adc_val);//send data through GPIO pin B6
 		  samples_sent+=1;//increment number od samples sent
-		  //sendCheckpoint(samples_sent);
+		  sendCheckpoint(samples_sent);
 	  }
 	  else
 	  {
@@ -474,7 +474,7 @@ void sendData(uint32_t data){
 
 	GPIO_PinState state;
 	uint32_t temp=data;
-	for (int i = 16; i>0 ; i--)//iterate through data bit by bit, LSB first, first 16 bits sent
+	for (int i = 12; i>0 ; i--) //iterate through data bit by bit, LSB first, first 12 bits sent
 	{
         if ((temp & 0x0001)==1)  // if data's last bit == 1
         	{
