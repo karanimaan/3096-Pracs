@@ -34,7 +34,7 @@
 /* USER CODE BEGIN PD */
 
 #define NUM_BITS 12
-#define BIT_PERIOD 100
+#define BIT_PERIOD 1000
 
 /* USER CODE END PD */
 
@@ -150,7 +150,7 @@ int main(void)
     	  int trans_counter = 0;
           for (int i = 0; i < 8; ++i)
         	  if (wait_then_read_pin() == 1)    // == GPIO_PIN_SET
-        		  trans_counter |= 1 << i;    // add 1 to i'th index
+        		  trans_counter |= (1 << i);    // add 1 to i'th index
 
           // compare counters
           if (trans_counter == counter) {
@@ -168,8 +168,8 @@ int main(void)
           }
 
           // Send output string to PC using UART
-          sprintf(output, "pot value = %d\n"
-                          "counter = %d\n\n", pot_val, counter);
+          sprintf(output, "pot value = %x\n"
+                          "counter = %x\n\n", pot_val, counter);
           HAL_UART_Transmit(&huart2, output, strlen(output), 1000);
       }
 

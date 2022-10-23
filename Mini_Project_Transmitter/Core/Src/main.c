@@ -54,7 +54,7 @@ DMA_HandleTypeDef hdma_usart2_tx;
 /* USER CODE BEGIN PV */
 char buffer[20];
 int delay = 1000;
-uint8_t bit_duration = 100;
+uint8_t bit_duration = 1000;
 uint8_t samples_sent;
 
 //TO DO:
@@ -88,8 +88,8 @@ void sendCheckpoint(uint32_t samples);
   * @brief  The application entry point.
   * @retval int
   */
-int main(void)
-{
+
+int main(void) {
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -146,8 +146,8 @@ int main(void)
 
 		  sendData(adc_val);//send data through GPIO pin B6
 	  	  //Test your sample function and display via UART
-	      sprintf(buffer, "ADC Value = %d \r\n", adc_val);
-	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
+	      /*sprintf(buffer, "ADC Value = %d \r\n", adc_val);
+	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);*/
 
 		  samples_sent+=1;//increment number od samples sent
 
@@ -477,35 +477,35 @@ uint32_t ADCtoCRR(uint32_t adc_val){    // convert ADC value to PWM duty cycle (
 
 void sendData(uint32_t data){
 
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_SET);//Start bit and Data transmission mode selection
-	HAL_Delay(50);
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_SET);  //Start bit
+	HAL_Delay(bit_duration/2);
 
 	GPIO_PinState state;
 	uint32_t temp=data;
 	for (int i = 12; i>0 ; i--) //iterate through data bit by bit, LSB first, first 12 bits sent
 	{
         if ((temp & 0x0001)==1)  // if data's last bit == 1
-        	{
-        	state=GPIO_PIN_SET;     // state = HIGH
-        	}
+        {
+            state = GPIO_PIN_SET;     // state = HIGH
+        }
         else
         {
-        	state=GPIO_PIN_RESET;
+            state=GPIO_PIN_RESET;
         }  // state = LOW
 
         HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, state);//LED for flashing
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, state);    // write data bit by bit
         HAL_Delay(bit_duration);//duration bit is set high/low
 
-  	  //Test your pollADC function and display via UART
-      sprintf(buffer, "bit state = %d \r\n", state);
-      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
+        //Test your pollADC function and display via UART
+        /*sprintf(buffer, "bit state = %d \r\n", state);
+        HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);*/
 
 
         temp >>= 1; // bitwise shift data to the right
 
 	}
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_RESET);
+	//HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_RESET);
 
 }
 void sendCheckpoint(uint32_t samples)//refer to sendData() comments, same implementation
@@ -525,7 +525,7 @@ void sendCheckpoint(uint32_t samples)//refer to sendData() comments, same implem
         }
         else state=GPIO_PIN_RESET;
 
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, state);//LED for flashing
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, state);    //LED for flashing
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, state);
         HAL_Delay(bit_duration);
 

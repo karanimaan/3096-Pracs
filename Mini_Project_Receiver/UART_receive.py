@@ -9,7 +9,7 @@ while(1):
         # Wait until there is data waiting in the serial buffer
         if(serialPort.in_waiting > 0):
             # Read data out of the buffer until a carraige return / new line is found
-            serialString = serialPort.readline().decode()
+            serialString = serialPort.read_all().decode()
             # Print the contents of the serial data
-            print(serialString, end='')
+            print(serialString)
     #except SerialError
