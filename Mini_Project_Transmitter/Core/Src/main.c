@@ -35,6 +35,7 @@ with baud rate of 9600.
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define UART_TIMEOUT 1000
+#define bit_duration 1000
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -54,7 +55,6 @@ DMA_HandleTypeDef hdma_usart2_tx;
 /* USER CODE BEGIN PV */
 char buffer[20];
 int delay = 1000;
-uint8_t bit_duration = 1000;
 uint8_t samples_sent;
 
 //TO DO:
@@ -75,7 +75,7 @@ void EXTI0_1_IRQHandler(void);
 uint32_t pollADC(void);
 uint32_t ADCtoCRR(uint32_t adc_val);
 void sendData(uint32_t adc_val);
-void sendCheckpoint(uint32_t samples);
+void sendCheckpoint(uint8_t samples);
 
 /* USER CODE END PFP */
 
@@ -146,15 +146,19 @@ int main(void) {
 
 		  sendData(adc_val);//send data through GPIO pin B6
 	  	  //Test your sample function and display via UART
-	      /*sprintf(buffer, "ADC Value = %d \r\n", adc_val);
-	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);*/
+	      sprintf(buffer, "ADC Value = %d \r\n", adc_val);
+	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
 
 		  samples_sent+=1;//increment number od samples sent
 
-		  sendCheckpoint(samples_sent);
 	  	  //Test your sample function and display via UART
 	      sprintf(buffer, "samples sent = %d \r\n", samples_sent);
 	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
+
+
+
+		  sendCheckpoint(samples_sent);
+
 	  }
 	  else
 	  {
@@ -176,7 +180,7 @@ int main(void) {
 
       //sendData(val)
 
-	  HAL_Delay (delay); // wait for 500 ms
+	  //HAL_Delay (delay); // wait for 500 ms
 
     /* USER CODE END WHILE */
 
@@ -498,8 +502,8 @@ void sendData(uint32_t data){
         HAL_Delay(bit_duration);//duration bit is set high/low
 
         //Test your pollADC function and display via UART
-        /*sprintf(buffer, "bit state = %d \r\n", state);
-        HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);*/
+        sprintf(buffer, "ADC bit state = %d \r\n", state);
+        HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
 
 
         temp >>= 1; // bitwise shift data to the right
@@ -508,7 +512,7 @@ void sendData(uint32_t data){
 	//HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_RESET);
 
 }
-void sendCheckpoint(uint32_t samples)//refer to sendData() comments, same implementation
+void sendCheckpoint(uint8_t samples)//refer to sendData() comments, same implementation
 {
 //	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_SET);//Start bit
 //	HAL_Delay(bit_duration);
@@ -516,7 +520,7 @@ void sendCheckpoint(uint32_t samples)//refer to sendData() comments, same implem
 //	HAL_Delay(500);
 
 	GPIO_PinState state;
-	uint32_t temp=samples;
+	uint8_t temp=samples;
 	for (int i = 8; i>0 ; i--)
 	{
         if((temp & 0x0001)==1)
@@ -530,7 +534,7 @@ void sendCheckpoint(uint32_t samples)//refer to sendData() comments, same implem
         HAL_Delay(bit_duration);
 
     	  //Test bit state for sample function and display via UART
-        sprintf(buffer, "bit state = %d \r\n", state);
+        sprintf(buffer, "Sample bit state = %d \r\n", state);
         HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
 
         temp >>= 1;
