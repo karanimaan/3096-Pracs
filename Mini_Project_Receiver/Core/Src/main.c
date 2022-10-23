@@ -128,9 +128,9 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, 1);    // write 1 to PA0 (For testing)
+      //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, 1);    // write 1 to PA0 (For testing)
 
-      if (read_pin() == 1)	// == GPIO_PIN_SET
+      if (read_pin() == 1)	// read for start bit
         start = 1;
 
       if (start) {
@@ -140,10 +140,15 @@ int main(void)
 
           // read pot val
           uint16_t pot_val = 0;
-          for (int i = 0; i < NUM_BITS; ++i)
-              if (wait_then_read_pin() == 1)    // == GPIO_PIN_SET
+          for (int i = 0; i < NUM_BITS; ++i) {
+              if (wait_then_read_pin() == 1) {
                   pot_val |= 1 << i;    // add 1 to i'th index
-
+                  sprintf(output, "1");
+              } else {
+                  sprintf(output, "0");
+              }
+              HAL_UART_Transmit(&huart2, output, strlen(output), 1000);
+          }
           counter++;
 
           // read trans_counter
@@ -168,8 +173,8 @@ int main(void)
           }
 
           // Send output string to PC using UART
-          sprintf(output, "pot value = %x\n"
-                          "counter = %x\n\n", pot_val, counter);
+          sprintf(output, "pot value = %d\n"
+                          "counter = %d\n\n", pot_val, counter);
           HAL_UART_Transmit(&huart2, output, strlen(output), 1000);
       }
 
