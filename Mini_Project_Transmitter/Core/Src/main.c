@@ -145,10 +145,11 @@ int main(void)
 
 
 		  sendData(adc_val);//send data through GPIO pin B6
-		  samples_sent+=1;//increment number od samples sent
-
-	      sprintf(buffer, "_______\r\n", samples_sent);
+	  	  //Test your sample function and display via UART
+	      sprintf(buffer, "ADC Value = %d \r\n", adc_val);
 	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
+
+		  samples_sent+=1;//increment number od samples sent
 
 		  sendCheckpoint(samples_sent);
 	  	  //Test your sample function and display via UART
@@ -477,7 +478,7 @@ uint32_t ADCtoCRR(uint32_t adc_val){    // convert ADC value to PWM duty cycle (
 void sendData(uint32_t data){
 
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_SET);//Start bit and Data transmission mode selection
-	HAL_Delay(bit_duration*2);
+	HAL_Delay(50);
 
 	GPIO_PinState state;
 	uint32_t temp=data;
@@ -509,10 +510,10 @@ void sendData(uint32_t data){
 }
 void sendCheckpoint(uint32_t samples)//refer to sendData() comments, same implementation
 {
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_SET);//Start bit
-	HAL_Delay(500);
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_RESET);//Checkpoint mode selection
-	HAL_Delay(500);
+//	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_SET);//Start bit
+//	HAL_Delay(bit_duration);
+//	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_RESET);//Checkpoint mode selection
+//	HAL_Delay(500);
 
 	GPIO_PinState state;
 	uint32_t temp=samples;
