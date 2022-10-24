@@ -21,7 +21,7 @@ with baud rate of 9600.
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include <stdio.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -53,7 +53,7 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
-char buffer[20];
+char buffer[35];
 int delay = 1000;
 uint8_t samples_sent;
 
@@ -149,13 +149,9 @@ int main(void) {
 	      sprintf(buffer, "ADC Value = %d \r\n", adc_val);
 	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
 
-		  samples_sent+=1;//increment number od samples sent
-
 	  	  //Test your sample function and display via UART
 	      sprintf(buffer, "samples sent = %d \r\n", samples_sent);
 	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), UART_TIMEOUT);
-
-
 
 		  sendCheckpoint(samples_sent);
 
@@ -449,7 +445,7 @@ uint32_t pollADC(void){     // get ADC value
 	// Complete the function body
     uint32_t timeout = 100;//in milliseconds //timeout = 500ms?
     HAL_ADC_Start(&hadc);
-    HAL_ADC_PollForConversion(&hadc, 100);
+    HAL_ADC_PollForConversion(&hadc, timeout);
 
     uint32_t val = HAL_ADC_GetValue(&hadc);
     HAL_ADC_Stop(&hadc);
@@ -509,7 +505,7 @@ void sendData(uint32_t data){
         temp >>= 1; // bitwise shift data to the right
 
 	}
-	//HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6,GPIO_PIN_RESET);
+	samples_sent+=1;//increment number of samples sent
 
 }
 void sendCheckpoint(uint8_t samples)//refer to sendData() comments, same implementation
